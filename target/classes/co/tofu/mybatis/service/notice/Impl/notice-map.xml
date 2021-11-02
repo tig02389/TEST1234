@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.tofu.mybatis.service.notice.NoticeMapper">
+
+	<select id="noticeSelectList"
+		resultType="co.tofu.mybatis.service.notice.NoticeVO"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		select * from (select rownum
+		rno,no,title,name,to_char(writedate,'yyyy-MM-dd') as
+		writedate, hit,
+		content
+		from notice where 1=1
+		<if test="no != ''">
+			and no like '%'||#{no}||'%'
+		</if>
+		<if test="name != null">
+			and name like '%'||#{name}||'%'
+		</if>
+		<if test="title != null">
+			and title like '%'||#{title}||'%'
+		</if>
+		order by no desc) where 1=1
+		<if test="rno != ''">
+			and rno between (#{rno}-1)*10+1 and #{rno}*10
+		</if>
+		order by no desc
+	</select>
+
+	<!-- 이거 내일 해보자 
+	<select id="noticeList"
+		resultType="co.tofu.mybatis.service.notice.NoticeVO"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		select count(*) from notice where 1=1
+		<if test="no != ''">
+			and no like '%'||#{no}||'%'
+		</if>
+		<if test="name != null">
+			and name like '%'||#{name}||'%'
+		</if>
+		<if test="title != null">
+			and title like '%'||#{title}||'%'
+		</if>
+	</select>
+-->
+	<select id="noticeSelect"
+		resultType="co.tofu.mybatis.service.notice.NoticeVO"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		select no,title,name,to_char(writedate,'yyyy-MM-dd') as
+		writedate,
+		<!-- (update notice set hit = hit+1 where no = #{no}) -->
+		hit
+		, content from notice where no =#{no}
+	</select>
+
+	<insert id="noticeInsert"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		insert into notice
+		values(bseq.nextval,#{id},#{name},#{writeDate},#{title},#{content},0)
+	</insert>
+
+	<update id="noticeUpdate"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		update notice set title = #{title}, content=#{content}
+		where no=#{no}
+	</update>
+
+	<update id="hitUpdate"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		update notice set hit = hit+1
+		where no=#{no}
+	</update>
+
+	<delete id="noticeDelete"
+		parameterType="co.tofu.mybatis.service.notice.NoticeVO">
+		delete from notice where
+		no = #{no}
+	</delete>
+
+	<delete id="noticeSelectDelete" parameterType="String">
+		delete from notice where
+		no in
+		<foreach item="item" collection="array" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	
+</mapper>
